@@ -8,6 +8,12 @@
 #define PERSO 6
 #define INVIO 2
 
+
+#include <avr/io.h>
+#include <avr/wdt.h>
+#define Reset_AVR() wdt_enable(WDTO_30MS); //reset
+
+
 int turno = 0; // dice di chi è il turno
 int traguardo = 50; // dice fino a che numero devi arrivare 
 int somma = 0; // somma dei numeri lanciati che deve raggiungere il traguardo
@@ -17,6 +23,11 @@ int ultimovalore = 0;
 
 void setup() {
   // put your setup code here, to run once:
+
+  Serial.begin(9600);
+
+  randomSeed(millis());
+  
   pinMode(GIOCATORE, INPUT);
   pinMode(COMPUTER, INPUT);
   pinMode(PIU, INPUT);
@@ -168,31 +179,9 @@ void Gioca() // metodo che mi fa giocare e posso inserire solo i valori che mi d
     somma = somma + ultimovalore;
   }
 }
-   
 
-void ControlloVittoria()//mi controlla chi ha vinto
+void SommaPiu()//vede se ho superato la somma
 {
-  // da compattare
-  if(somma == traguardo)
-  {
-    if(turno == 0)
-    {
-      //vinto giocatore 1
-      digitalWrite(VINTO1, HIGH);
-    }
-    if(turno == 2 && giococomp == 2)
-    {
-      //HA VINTO IL COMPUTER
-      digitalWrite(PERSO, HIGH);
-    }
-    if(turno == 1 && giococomp == 1)
-    {
-      //ha vinto il giocatore 2
-      digitalWrite(VINTO2, HIGH);
-    }
-  }
-  if(somma > traguardo)
-  {
     if(turno == 0)
     {
       if(giococomp == 2)
@@ -214,7 +203,49 @@ void ControlloVittoria()//mi controlla chi ha vinto
       //ha vinto il giocatore 2
       digitalWrite(VINTO1, HIGH);
     }
+}
+
+void SommaUguale()//vede se hai la somma uguale
+{
+    if(turno == 0)
+    {
+      //vinto giocatore 1
+      digitalWrite(VINTO1, HIGH);
+    }
+    if(turno == 2 && giococomp == 2)
+    {
+      //HA VINTO IL COMPUTER
+      digitalWrite(PERSO, HIGH);
+    }
+    if(turno == 1 && giococomp == 1)
+    {
+      //ha vinto il giocatore 2
+      digitalWrite(VINTO2, HIGH);
+    }
+}
+
+void ControlloVittoria()//mi controlla chi ha vinto
+{
+  // da compattare
+  if(somma == traguardo)
+  {
+    SommaUguale();
   }
+  if(somma > traguardo)
+  {
+    SommaPiu();
+  }
+      delay(5000);
+      Reset_AVR();  //mi resetti tutte le variabili in moda da ricominciare da capo
+}
+
+void Giocac()
+{
+  DammiValori(ultimovalore);
+  int r = analogRead(A0) % 4;
+  Serial.println(r);
+  ultimovalore = valori[r];
+  somma = somma + ultimovalore;
 }
 
 
@@ -222,16 +253,16 @@ void ControlloVittoria()//mi controlla chi ha vinto
 
 void loop() {
   // put your main code here, to run repeatedly:
-    Controchi();
+    Controchi();//metodo che mi dice contro chi gioco
     Deciditraguardo();//metodo che sceglie contro chi devi giocare e a che cifra vuoi arrivare
       
       while(somma < traguardo)
       {
           if(turno == 0) //gioca giocatore 1
           {
-            Gioca();
-            ControlloVittoria();
-            if(giococomp == 1)
+            Gioca();// fa giocare il iocatore 1
+            ControlloVittoria();//mi controlla chi ha vinto
+            if(giococomp == 1) // cambia il turno per andare avanti
               {
                 turno = 1;
               }
@@ -248,10 +279,9 @@ void loop() {
           }
          if(turno == 2 && giococomp == 2) //se gioco con il computer forse
            {
-               //faccio ogni volta un numero casuale che devo controllare che non sia uguare a quelli che non posso fare e lo aggiungo alla somma
-               // controllo che possa raggiungere il numero scelto
+               Giocac();
+               ControlloVittoria();
+               turno = 0;
            }
       }
-      ControlloVittoria();//controlla chi ha raggiunto il traguardo
-    
 }
