@@ -8,18 +8,12 @@
 #define PERSO 6
 #define INVIO 2
 
-
-
-
 int turno = 0; // dice di chi è il turno
 int traguardo = 50; // dice fino a che numero devi arrivare 
 int somma = 0; // somma dei numeri lanciati che deve raggiungere il traguardo
 int giococomp = 0; // dice se devi giocare contro un computer o con un giocatore dipende se voglio fare anche il computer
-int iniziogioco = 0; // dice quando puoi iniziare il gioco dopo aver scelto il traguardo
-int ultimovalore = 0; // mi dice il valore ultimo che hanno inserito cosi da togliere la possibilità di inserire lo stessonumero
-int numeriPossibili[7]; // array di valori che posso premere da far vedere sul LCD
-
-
+int valori[7];
+int ultimovalore = 0;
 
 void setup() {
   // put your setup code here, to run once:
@@ -29,7 +23,7 @@ void setup() {
   pinMode(MENO, INPUT);
   pinMode(INVIO, INPUT);
 
-
+  
   pinMode(VINTO1, OUTPUT);
   pinMode(VINTO2, OUTPUT);
   pinMode(PERSO, OUTPUT);
@@ -37,11 +31,9 @@ void setup() {
   digitalWrite(VINTO1, LOW);
   digitalWrite(VINTO2, LOW);
   digitalWrite(PERSO, LOW);
-
-// foto cell come leggere la seriale
 }
 
-void Controchi()
+void Controchi()//metodo che mi dice se sarò contro un giocatore o contro un computer
 {
   int tempo = 10;
   bool premuto = false;
@@ -108,38 +100,79 @@ void Deciditraguardo() // AUMENTA E DIMINUISCE IL VALORE DA RAGGIUNGERE FINCHE N
    }
 }
 
-int ValoriPossibili()
+void Riempi ( int n, int m)
 {
-  if(somma == 0)
-  {
-    for(int i = 0; i = 6; i++)
-    {
-      numeriPossibili[i] = i;
-    }
-  }
-  else
-  {
-      for(int i = 0; i = 6; i++)
-    {
-      numeriPossibili[i] = NULL;
-    }
-    if(ultimovalore == 1)
-    {
-      
-    }
-  }
+  for( int i = 0; i <= 6; i++)
+     {
+        if(i != n && i!= m)
+          {
+              valori[i] = i;
+           }
+      } 
 }
 
 
- 
- 
-
-
-
-
-
-void ControlloVittoria()
+void DammiValori(int ultimo) // mi da un'array di numeri che posso scegliere quando gioco
 {
+   if(somma == 0)
+   {
+      for( int i = 0; i <= 6; i++)
+      {
+        valori[i] = i;
+      }
+   }
+   else
+   {
+          for( int i = 0; i <= 6; i++)
+            {
+               valori[i] = NULL;
+             }
+             
+          if(ultimo == 1 || ultimo == 6)
+             {
+                 Riempi(1,6);
+             }      
+           if(ultimo == 2 || ultimo == 5)
+            {
+                Riempi(2,5);
+              }
+          if(ultimo == 3 || ultimo == 4)
+              {
+                Riempi(3,4);
+              }
+   }
+}
+
+void Gioca() // metodo che mi fa giocare e posso inserire solo i valori che mi da il metodo DammiValori()
+{
+  int n = 0;
+  DammiValori(ultimovalore);
+  while(digitalRead (INVIO) == HIGH) 
+  {
+    if(digitalRead (PIU) == HIGH)
+    {
+      if(n < 6 && valori[n]!= NULL)
+      {
+        n++;
+        ultimovalore = valori[n];
+      }
+    }
+    if(digitalRead (MENO) == HIGH)
+    {
+      if(n > 0 && valori[n]!= NULL)
+      {
+        n--;
+        ultimovalore = valori[n];
+      }
+    }
+    somma = somma + ultimovalore;
+  }
+}
+   
+
+void ControlloVittoria()//mi controlla chi ha vinto
+{
+  // da compattare
   if(somma == traguardo)
   {
     if(turno == 0)
@@ -189,28 +222,29 @@ void ControlloVittoria()
 
 void loop() {
   // put your main code here, to run repeatedly:
-
     Controchi();
     Deciditraguardo();//metodo che sceglie contro chi devi giocare e a che cifra vuoi arrivare
-    if(iniziogioco != 0) // fa iniziare il gioco solo se hai scelto il numero di inizio e con chi giochi
-    {
+      
       while(somma < traguardo)
       {
           if(turno == 0) //gioca giocatore 1
           {
-            
-            //metodo che fa giocare il primo giocatore e posso scegliere anche 0 e passi il turno
-            //mi dai anche il numero ultimo  // all'interno chiamo metodo che restituisce le opzioni che posso mettere per il giocatore dopo
-            //vedo strutture gioco fiammiferi
+            Gioca();
+            ControlloVittoria();
+            if(giococomp == 1)
+              {
+                turno = 1;
+              }
+              if(giococomp == 2)
+              {
+                turno = 2;
+              }
           }
           if(turno == 1 && giococomp == 1) // gioca giocatore 2
           {
-            //metodo che fa giocare il primo giocatore e posso scegliere anche 0 e passi il turno
-            //mi dai anche il numero ultimo  // all'interno chiamo metodo che restituisce le opzioni che posso mettere per il giocatore dopo
-            //vedo strutture gioco fiammiferi
-            // devo aspettare che l'utente metta il pulsante
-            //richiao metodo che mi fa giocare con il giocatore 1
-            //alla fine di ogni volta metodo che fa il controllo e non deve superare sennò perdi se è uguale vince chi ha il turno quindi devo fare il controllo prima di cambiare il turno
+            Gioca();
+            ControlloVittoria();
+            turno = 0;
           }
          if(turno == 2 && giococomp == 2) //se gioco con il computer forse
            {
@@ -219,5 +253,5 @@ void loop() {
            }
       }
       ControlloVittoria();//controlla chi ha raggiunto il traguardo
-    }
+    
 }
