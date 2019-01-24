@@ -1,12 +1,12 @@
 
-#define GIOCATORE 7
-#define COMPUTER 4
+#define GIOCATORE 9
+#define COMPUTER 9
 #define PIU 8
 #define MENO 2
-#define VINTO1 9
-#define VINTO2 9
-#define PERSO 6
-#define INVIO 2
+#define VINTO1 13
+#define VINTO2 12
+#define PERSO 11
+#define INVIO 9
 
 
 #include <avr/io.h>
@@ -20,6 +20,9 @@ int somma = 0; // somma dei numeri lanciati che deve raggiungere il traguardo
 int giococomp = 0; // dice se devi giocare contro un computer o con un giocatore dipende se voglio fare anche il computer
 int valori[7];
 int ultimovalore = 0;
+
+
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -46,7 +49,7 @@ void setup() {
 
 void Controchi()//metodo che mi dice se sarò contro un giocatore o contro un computer
 {
-  int tempo = 10;
+  int tempo = 5;
   bool premuto = false;
   while (!premuto)
   {
@@ -54,12 +57,14 @@ void Controchi()//metodo che mi dice se sarò contro un giocatore o contro un co
     {
       giococomp = 1;
       premuto = true;
+      Serial.println("scelto un altro giocatore");
       break;
     }
     if (computer() > tempo )
     {
       giococomp = 2;
       premuto = true;
+      Serial.println("scelto il computer");
       break;
     }
   }
@@ -90,25 +95,56 @@ int computer()//per verificare se è stato premuto il pulsante computer
   return durata;
 }
 
+int contaTempoPIU()
+{
+  int inizio = millis();
+  while (digitalRead (PIU) == HIGH)
+  {
+  }
+  int fine = millis();
+  int durata = fine - inizio;
+  delay(100);
+  return durata;
+}
+
+int contaTempoMENO()
+{
+  int inizio = millis();
+  while (digitalRead (PIU) == HIGH)
+  {
+  }
+  int fine = millis();
+  int durata = fine - inizio;
+  delay(100);
+  return durata;
+}
+
 void Deciditraguardo() // AUMENTA E DIMINUISCE IL VALORE DA RAGGIUNGERE FINCHE NON PREMO INVIO
 {
-   while(digitalRead (INVIO) == HIGH) 
+  int tempo = 5;
+   while(digitalRead (INVIO) == LOW) 
    {
-    if(digitalRead (PIU) == HIGH)
+    if(digitalRead (PIU) == HIGH && contaTempoPIU() > tempo )
     {
       if(traguardo < 99)
       {
         traguardo++;
+        Serial.println(traguardo);
+        Serial.println("traguardo attuale");
       }
     }
-    if(digitalRead (MENO) == HIGH)
+    if(digitalRead (MENO) == HIGH && contaTempoMENO() > tempo )
     {
       if(traguardo > 30)
       {
         traguardo--;
+        Serial.println(traguardo);
+        Serial.println("traguardo attuale");
       }
     }
    }
+        Serial.println(traguardo);
+        Serial.println("traguardo finale");
 }
 
 void Riempi ( int n, int m)
@@ -253,7 +289,7 @@ void Giocac()
 
 void loop() {
   // put your main code here, to run repeatedly:
-    Controchi();//metodo che mi dice contro chi gioco
+    Controchi();//metodo che mi dice contro chi gioco 
     Deciditraguardo();//metodo che sceglie contro chi devi giocare e a che cifra vuoi arrivare
       
       while(somma < traguardo)
