@@ -1,12 +1,12 @@
 
-#define GIOCATORE 9
-#define COMPUTER 9
-#define PIU 8
-#define MENO 2
-#define VINTO1 13
-#define VINTO2 12
-#define PERSO 11
-#define INVIO 9
+#define GIOCATORE 13
+#define COMPUTER 12
+#define PIU 12
+#define MENO 13
+#define VINTO1 8
+#define VINTO2 7
+#define PERSO 4
+#define INVIO 2
 
 
 #include <avr/io.h>
@@ -19,7 +19,7 @@ int traguardo = 50; // dice fino a che numero devi arrivare
 int somma = 0; // somma dei numeri lanciati che deve raggiungere il traguardo
 int giococomp = 0; // dice se devi giocare contro un computer o con un giocatore dipende se voglio fare anche il computer
 int valori[7];
-int ultimovalore = 0;
+int ultimovalore;
 
 
 
@@ -110,7 +110,7 @@ int contaTempoPIU()
 int contaTempoMENO()
 {
   int inizio = millis();
-  while (digitalRead (PIU) == HIGH)
+  while (digitalRead (MENO) == HIGH)
   {
   }
   int fine = millis();
@@ -149,10 +149,11 @@ void Deciditraguardo() // AUMENTA E DIMINUISCE IL VALORE DA RAGGIUNGERE FINCHE N
 
 void Riempi ( int n, int m)
 {
-  for( int i = 0; i <= 6; i++)
+  for( int i = 1; i <= 6; i++)
      {
         if(i != n && i!= m)
           {
+            Serial.println(i);
               valori[i] = i;
            }
       } 
@@ -163,9 +164,10 @@ void DammiValori(int ultimo) // mi da un'array di numeri che posso scegliere qua
 {
    if(somma == 0)
    {
-      for( int i = 0; i <= 6; i++)
+      for( int i = 1; i <= 6; i++)
       {
-        valori[i] = i;
+         Serial.println(i);
+         valori[i] = i;
       }
    }
    else
@@ -192,28 +194,45 @@ void DammiValori(int ultimo) // mi da un'array di numeri che posso scegliere qua
 
 void Gioca() // metodo che mi fa giocare e posso inserire solo i valori che mi da il metodo DammiValori()
 {
-  int n = 0;
+  int n = 1;
+  int tempo = 10;
+        Serial.println("numero");
+        Serial.println(n);
+        
+        Serial.println("ultimovalore");
+        Serial.println(ultimovalore);
   DammiValori(ultimovalore);
-  while(digitalRead (INVIO) == HIGH) 
+  while(digitalRead (INVIO) == LOW) 
   {
-    if(digitalRead (PIU) == HIGH)
+    if(digitalRead (PIU) == HIGH && contaTempoPIU() >tempo )
     {
       if(n < 6 && valori[n]!= NULL)
       {
         n++;
         ultimovalore = valori[n];
+        Serial.println(ultimovalore);
+        Serial.println("ultimovalore");
+        Serial.println("numero");
+        Serial.println(n);
       }
     }
-    if(digitalRead (MENO) == HIGH)
+    if(digitalRead (MENO) == HIGH && contaTempoMENO() >tempo)
     {
-      if(n > 0 && valori[n]!= NULL)
+      if(n > 1 && valori[n]!= NULL)
       {
         n--;
         ultimovalore = valori[n];
+        Serial.println(ultimovalore);
+        Serial.println("ultimovalore");
+        Serial.println("numero");
+        Serial.println(n);
       }
     }
+    }
     somma = somma + ultimovalore;
-  }
+    
+        Serial.println("somma");
+        Serial.println(somma);
 }
 
 void SommaPiu()//vede se ho superato la somma
@@ -266,13 +285,15 @@ void ControlloVittoria()//mi controlla chi ha vinto
   if(somma == traguardo)
   {
     SommaUguale();
+    delay(5000);
+    Reset_AVR(); 
   }
   if(somma > traguardo)
   {
     SommaPiu();
-  }
-      delay(5000);
-      Reset_AVR();  //mi resetti tutte le variabili in moda da ricominciare da capo
+    delay(5000);
+    Reset_AVR(); //mi resetti tutte le variabili in moda da ricominciare da capo
+  } 
 }
 
 void Giocac()
@@ -291,8 +312,10 @@ void loop() {
   // put your main code here, to run repeatedly:
     Controchi();//metodo che mi dice contro chi gioco 
     Deciditraguardo();//metodo che sceglie contro chi devi giocare e a che cifra vuoi arrivare
-      
-      while(somma < traguardo)
+    delay(500);
+    Serial.println(somma);
+    Serial.println(traguardo);
+    while(somma < traguardo || somma != traguardo )
       {
           if(turno == 0) //gioca giocatore 1
           {
@@ -306,6 +329,9 @@ void loop() {
               {
                 turno = 2;
               }
+    Serial.println(turno);
+    Serial.println("turno");
+    delay(500);
           }
           if(turno == 1 && giococomp == 1) // gioca giocatore 2
           {
