@@ -18,6 +18,7 @@ int somma = 0; // somma dei numeri lanciati che deve raggiungere il traguardo
 int giococomp = 0; // dice se devi giocare contro un computer o con un giocatore dipende se voglio fare anche il computer
 int valori[7];
 int ultimovalore;
+int s = 0;
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
 void setup() {
@@ -34,6 +35,10 @@ void setup() {
   digitalWrite(VINTO1, LOW);
   digitalWrite(VINTO2, LOW);
   digitalWrite(PERSO, LOW);
+  pinMode(A0, OUTPUT);
+  
+lcd.clear();
+lcd.begin(16, 2);
 }
 
 void Controchi()//metodo che mi dice se sarò contro un giocatore o contro un computer
@@ -186,6 +191,7 @@ void DammiValori(int ultimo) // mi da un'array di numeri che posso scegliere qua
 
 void Gioca() // metodo che mi fa giocare e posso inserire solo i valori che mi da il metodo DammiValori()
 {
+  s = 0;
   int n = 1;
   int tempo = 10;
   int valorescelto = 0;
@@ -204,6 +210,7 @@ void Gioca() // metodo che mi fa giocare e posso inserire solo i valori che mi d
       lcd.print(valori[n]);
       }
     }
+  
     if(digitalRead (MENO) == HIGH && contaTempoMENO() >tempo)
     {
       if(n > 1 && valori[n]!= NULL)
@@ -216,7 +223,9 @@ void Gioca() // metodo che mi fa giocare e posso inserire solo i valori che mi d
       lcd.print(valori[n]);
       }
     }
-    }
+  }
+     if(valorescelto != 0)
+     {
     somma = somma + valorescelto;
     ultimovalore = valorescelto;
     delay(2000);
@@ -225,6 +234,8 @@ void Gioca() // metodo che mi fa giocare e posso inserire solo i valori che mi d
       lcd.setCursor(0, 1);
       lcd.print(somma);
       delay(2000);
+     }
+     else{ s = 1;}
 }
 
 void SommaPiu()//vede se ho superato la somma
@@ -313,12 +324,14 @@ void ControlloVittoria()//mi controlla chi ha vinto
 
 void Giocac()
 {
+  s = 0;
   DammiValori(ultimovalore);
   int r = analogRead(A0) % 4;
   Serial.println(r);
   ultimovalore = valori[r];
+  if(valori[r]!= 0)
+  {
   somma = somma + ultimovalore;
-  
       lcd.begin(16, 2);
       lcd.print("valore");
       lcd.setCursor(0, 1);
@@ -329,13 +342,15 @@ void Giocac()
       lcd.setCursor(0, 1);
       lcd.print(somma);
       delay(2000);
+  }
+  else { s = 1;}
 }
 
 
 
 
 void loop() {
-  
+      digitalWrite(A0, HIGH);
       lcd.begin(16, 2);
       lcd.print("scegli contro");
       lcd.setCursor(0, 1);
@@ -346,10 +361,10 @@ void loop() {
       lcd.print("scegli traguardo");
       delay(2000);
       Deciditraguardo();//metodo che sceglie contro chi devi giocare e a che cifra vuoi arrivare
-      delay(2000);
+      delay(1500);
       lcd.begin(16, 2);
       lcd.print("inizio gioco");
-      delay(2000);
+      delay(1500);
     
     while(somma < traguardo || somma != traguardo )
       {
@@ -367,11 +382,11 @@ void loop() {
              
             Gioca();// fa giocare il giocatore 
             ControlloVittoria();//mi controlla chi ha vinto
-            if(giococomp == 1) // cambia il turno per andare avanti
+            if(giococomp == 1 && s == 0 ) // cambia il turno per andare avanti
               {
                 turno = 1;
               }
-              if(giococomp == 2)
+              if(giococomp == 2 && s == 0 )
               {
                 turno = 2;
               }
@@ -390,20 +405,24 @@ void loop() {
              lcd.print("");
              
             Gioca();
-            ControlloVittoria();
+            ControlloVittoria();  
+            if(s == 0)
+            {          
             turno = 0;
+            }
           }
          if(turno == 2 && giococomp == 2) //se gioco con il computer forse
            {
-            
              lcd.begin(16, 2);
              lcd.print("tocca a:");
              lcd.setCursor(0, 1);
              lcd.print("computer");
-             delay(1500);
-               Giocac();
-               ControlloVittoria();
-               turno = 0;
+            Giocac();
+            ControlloVittoria();            
+            if(s == 0)
+            {          
+            turno = 0;
+            }
            }
       }
 }
