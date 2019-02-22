@@ -59,14 +59,12 @@ void Controchi()//metodo che mi dice se sarò contro un giocatore o contro un co
       giococomp = 1;
       premuto = true;
       scrivi("scelto un altro","giocatore");
-      break;
     }
     if (computer() > tempo )
     {
       giococomp = 2;
       premuto = true;
       scrivi("scelto computer","");
-      break;
     }
   }
 }
@@ -75,49 +73,40 @@ int giocatore()//per verificare se è stato premuto il pulsante giocatore
 {
   int inizio = millis();
   while (digitalRead (GIOCATORE) == HIGH){ }
-  int fine = millis();
-  int durata = fine - inizio;
-  return durata;
+  return millis() - inizio;
 }
 
 int computer()//per verificare se è stato premuto il pulsante computer
 {
   int inizio = millis();
   while (digitalRead (COMPUTER) == HIGH){}
-  int fine = millis();
-  int durata = fine - inizio;
-  return durata;
+  return millis() - inizio;
 }
 
 int contaTempoPIU() //serve sia nel metodo che mi decide il traguardo che quello che mi fa giocare il giocatore
 {
   int inizio = millis();
   while (digitalRead (PIU) == HIGH){ }
-  int fine = millis();
-  int durata = fine - inizio;
-  return durata;
+  return millis() - inizio;
 }
 
 int contaTempoMENO()
 {
   int inizio = millis();
   while (digitalRead (MENO) == HIGH){}
-  int fine = millis();
-  int durata = fine - inizio;
-  return durata;
+  return millis() - inizio;
 }
 
 void Deciditraguardo() // AUMENTA E DIMINUISCE IL VALORE DA RAGGIUNGERE FINCHE NON PREMO INVIO
 {
-  int tempo = 5;
    while(digitalRead (INVIO) == LOW) 
    {
-    if(digitalRead (PIU) == HIGH && contaTempoPIU() > tempo && traguardo < 99)
+    if(digitalRead (PIU) == HIGH && contaTempoPIU() > 0 && traguardo < 99)
     {
         traguardo++;
         scrivi("traguardo",String(traguardo));
     }
-    if(digitalRead (MENO) == HIGH && contaTempoMENO() > tempo && traguardo > 30 )
+    if(digitalRead (MENO) == HIGH && contaTempoMENO() > 0 && traguardo > 30 )
     {
         traguardo--;
         scrivi("traguardo", String(traguardo));
@@ -168,12 +157,11 @@ void Gioca() // metodo principale che mi fa giocare e posso inserire solo i valo
 {
   s = 0;
   int n = 1;
-  int tempo = 10;
   int valorescelto = 0;
   DammiValori(ultimovalore);
   while(digitalRead (INVIO) == LOW) 
   {
-    if(digitalRead (PIU) == HIGH && contaTempoPIU() >tempo )
+    if(digitalRead (PIU) == HIGH && contaTempoPIU() > 0)
     {
       if(n < 6 && valori[n]!= NULL)
       {
@@ -182,7 +170,7 @@ void Gioca() // metodo principale che mi fa giocare e posso inserire solo i valo
         scrivi("valore",String(valori[n]));
       }
     }
-    if(digitalRead (MENO) == HIGH && contaTempoMENO() >tempo)
+    if(digitalRead (MENO) == HIGH && contaTempoMENO() > 0)
     {
       if(n > 1 && valori[n]!= NULL)
       {
