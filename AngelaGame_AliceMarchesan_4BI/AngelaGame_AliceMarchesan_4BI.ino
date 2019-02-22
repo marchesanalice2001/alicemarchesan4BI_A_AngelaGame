@@ -126,9 +126,17 @@ void Riempi ( int n, int m)
            }
       } 
 }
+void Cancella()
+{
+   for( int i = 1; i <= 7; i++)
+      {
+         valori[i] = NULL;
+      }
+}
 
 void DammiValori(int ultimo) // mi da un'array di numeri che posso scegliere quando gioco
 {
+  Cancella();
    if(somma == 0)
    {
       for( int i = 1; i <= 6; i++)
