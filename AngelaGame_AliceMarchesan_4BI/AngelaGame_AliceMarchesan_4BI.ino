@@ -11,13 +11,12 @@
 #include <avr/wdt.h>
 #define Reset_AVR()   wdt_enable(WDTO_30MS); //reset
 
-
 int turno = 0; // dice di chi è il turno
 int traguardo = 50; // dice fino a che numero devi arrivare 
 int somma = 0; // somma dei numeri lanciati che deve raggiungere il traguardo
 int giococomp = 0; // dice se devi giocare contro un computer o con un giocatore dipende se voglio fare anche il computer
-int valori[7];
-int ultimovalore;
+int valori[6];
+int ultimovalore = 0;
 int s = 0;
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
@@ -50,17 +49,16 @@ void scrivi ( String n, String m)
 
 void Controchi()//metodo che mi dice se sarò contro un giocatore o contro un computer
 {
-  int tempo = 5;
   bool premuto = false;
   while (!premuto)
   {
-    if (giocatore() > tempo )
+    if (digitalRead (GIOCATORE) == HIGH )
     {
       giococomp = 1;
       premuto = true;
       scrivi("scelto un altro","giocatore");
     }
-    if (computer() > tempo )
+    if (digitalRead (COMPUTER) == HIGH)
     {
       giococomp = 2;
       premuto = true;
@@ -68,47 +66,18 @@ void Controchi()//metodo che mi dice se sarò contro un giocatore o contro un co
     }
   }
 }
-
-int giocatore()//per verificare se è stato premuto il pulsante giocatore
-{
-  int inizio = millis();
-  while (digitalRead (GIOCATORE) == HIGH){ }
-  return millis() - inizio;
-}
-
-int computer()//per verificare se è stato premuto il pulsante computer
-{
-  int inizio = millis();
-  while (digitalRead (COMPUTER) == HIGH){}
-  return millis() - inizio;
-}
-
-int contaTempoPIU() //serve sia nel metodo che mi decide il traguardo che quello che mi fa giocare il giocatore
-{
-  int inizio = millis();
-  while (digitalRead (PIU) == HIGH){ }
-  return millis() - inizio;
-}
-
-int contaTempoMENO()
-{
-  int inizio = millis();
-  while (digitalRead (MENO) == HIGH){}
-  return millis() - inizio;
-}
-
 void Deciditraguardo() // AUMENTA E DIMINUISCE IL VALORE DA RAGGIUNGERE FINCHE NON PREMO INVIO
 {
    while(digitalRead (INVIO) == LOW) 
    {
-    if(digitalRead (PIU) == HIGH && contaTempoPIU() > 0 && traguardo < 99)
+    if(digitalRead (PIU) == HIGH && traguardo < 99)
     {
-        traguardo++;
+        traguardo++;    delay (200);
         scrivi("traguardo",String(traguardo));
     }
-    if(digitalRead (MENO) == HIGH && contaTempoMENO() > 0 && traguardo > 30 )
+    if(digitalRead (MENO) == HIGH && traguardo > 30 )
     {
-        traguardo--;
+        traguardo--;    delay (200);
         scrivi("traguardo", String(traguardo));
     }
    }
@@ -116,48 +85,37 @@ void Deciditraguardo() // AUMENTA E DIMINUISCE IL VALORE DA RAGGIUNGERE FINCHE N
 
 void Riempi ( int n, int m)
 {
-  int s = 1;
-  for( int i = 1; i <= 6; i++)
+  int o = 0;
+  for( int i = 0; i <= 6; i++)
      {
-        if(i != n && i!= m)
+        if(i != n && i!= m )
           {
-              valori[s] = i;
-              s++;
+              valori[o] = i;
+              o++;
            }
+           else{ valori[o] = NULL;}
       } 
 }
-void Cancella()
+void Carica(int ultimo)
 {
-   for( int i = 1; i <= 7; i++)
+   for( int i = 0; i <= 6; i++)
       {
-         valori[i] = NULL;
+         if(ultimo == 1 || ultimo == 6)
+              { Riempi(1,6);}      
+           if(ultimo == 2 || ultimo == 5)
+              { Riempi(2,5);}
+          if(ultimo == 3 || ultimo == 4)
+              { Riempi(3,4);}
       }
 }
 
-void DammiValori(int ultimo) // mi da un'array di numeri che posso scegliere quando gioco
+void DammiValori(int u) // mi da un'array di numeri che posso scegliere quando gioco
 {
-  Cancella();
+  Carica(u);
    if(somma == 0)
    {
-      for( int i = 1; i <= 6; i++)
-      {
-         valori[i] = i;
-      }
-   }
-   else
-   {
-          if(ultimo == 1 || ultimo == 6)
-             {
-                 Riempi(1,6);
-             }      
-           if(ultimo == 2 || ultimo == 5)
-            {
-                Riempi(2,5);
-              }
-          if(ultimo == 3 || ultimo == 4)
-              {
-                Riempi(3,4);
-              }
+      for( int i = 0; i <= 6; i++)
+      { valori[i] = i;  }
    }
 }
 
@@ -165,46 +123,38 @@ void Gioca() // metodo principale che mi fa giocare e posso inserire solo i valo
 {
   s = 0;
   int n = 1;
-  int valorescelto = 0;
+  int valorescelto = NULL;
   DammiValori(ultimovalore);
   while(digitalRead (INVIO) == LOW) 
   {
-    if(digitalRead (PIU) == HIGH && contaTempoPIU() > 0)
+    if(digitalRead (PIU) == HIGH && n <= 5 && valori[n+1]!= 0)
     {
-      if(n < 6 && valori[n]!= NULL)
-      {
         n++;
         valorescelto = valori[n];
-        scrivi("valore",String(valori[n]));
-      }
+        scrivi("valore",String(valorescelto));
     }
-    if(digitalRead (MENO) == HIGH && contaTempoMENO() > 0)
+    if(digitalRead (MENO) == HIGH && n > 1)
     {
-      if(n > 1 && valori[n]!= NULL)
-      {
         n--;
         valorescelto = valori[n];
-        scrivi("valore",String(valori[n]));
-      }
+        scrivi("valore",String(valorescelto));
     }
+    delay(150);
   }
   ControlloSomma(valorescelto);
 }
 
-void SommaPiu()//vede se ho superato la somma
+void SommaPiu()//vede se ho superato la somma ////////////////////////////////////////////
 {
-    if(turno == 0)
+    if(turno == 0 && giococomp == 2)
     {
-      if(giococomp == 2)
-      {
       scrivi("vinto","computer");
       digitalWrite(PERSO, HIGH);
       }
-      if(giococomp == 1)
-      {
+    if(turno == 0 && giococomp == 1)
+    {
       scrivi("vinto","giocatore 2");
         digitalWrite(VINTO2, HIGH);
-      }
     }
     if(turno == 2 || turno == 1)
     {
@@ -213,19 +163,19 @@ void SommaPiu()//vede se ho superato la somma
     }
 }
 
-void SommaUguale()//vede se hai la somma uguale
+void SommaUguale()//vede se hai la somma uguale //////////////////////////////////////
 {
     if(turno == 0)
     {
       scrivi("vinto","giocatore 1");
       digitalWrite(VINTO1, HIGH);
     }
-    if(turno == 2 && giococomp == 2)
+    if(turno == 2)
     {
       scrivi("vinto","computer");
       digitalWrite(PERSO, HIGH);
     }
-    if(turno == 1 && giococomp == 1)
+    if(turno == 1)
     {
       scrivi("vinto","giocatore 2");
       digitalWrite(VINTO2, HIGH);
@@ -253,8 +203,6 @@ void ControlloVittoria()//mi controlla chi ha vinto
   {
   somma = somma + n;
   ultimovalore = n;
-      scrivi("valore",String (n));
-      delay(1500);
       scrivi("somma",String (somma));
       delay(1500);
   }
@@ -272,16 +220,11 @@ void inizio()
 {
       digitalWrite(A0, HIGH);
       scrivi("scegli contro","chi giochi");
-      Controchi();//metodo che mi dice contro chi gioco 
-      delay(1500);
-      scrivi("scegli traguardo","");
-      delay(1500);
-      Deciditraguardo();//metodo che sceglie contro chi devi giocare e a che cifra vuoi arrivare
-      delay(1500);
-      scrivi("inizio gioco","");
-      delay(1500);
+      Controchi();   delay(700);
+      scrivi("scegli traguardo","");  delay(1000);
+      Deciditraguardo();  delay(700);
+      scrivi("inizio gioco",""); delay(700);
 }
-
 
 void loop() {
     inizio();
@@ -289,42 +232,31 @@ void loop() {
       {
           if(turno == 0) //gioca giocatore 1
           {
-              scrivi("tocca a : ","giocatore 1");
-              delay(1500);
+              scrivi("tocca a : ","giocatore 1"); delay(1000);
               scrivi("scegli valore ","");
               Gioca();// fa giocare il giocatore 
               ControlloVittoria();//mi controlla chi ha vinto
             if(giococomp == 1 && s == 0 ) // cambia il turno per andare avanti
-              {
-                turno = 1;
-              }
+              { turno = 1; }
               if(giococomp == 2 && s == 0 )
-              {
-                turno = 2;
-              }
+              { turno = 2;}
           }
-          if(turno == 1 && giococomp == 1) // gioca giocatore 2
+          if(turno == 1) // gioca giocatore 2
           {
-             scrivi("tocca a : ","giocatore 2");
-             delay(1500);
+             scrivi("tocca a : ","giocatore 2"); delay(1500);
              scrivi("scegli valore ","");
              Gioca();
              ControlloVittoria();  
             if(s == 0)
-            {          
-            turno = 0;
-            }
+            { turno = 0;}
           }
-         if(turno == 2 && giococomp == 2) //se gioco con il computer forse
+         if(turno == 2) //se gioco con il computer forse
            {
-             scrivi("tocca a : ","computer");
-             delay(1500);
+             scrivi("tocca a : ","computer");delay(1500);
              Giocac();
              ControlloVittoria();            
             if(s == 0)
-            {          
-            turno = 0;
-            }
+            {  turno = 0;}
            }
       }
 }
