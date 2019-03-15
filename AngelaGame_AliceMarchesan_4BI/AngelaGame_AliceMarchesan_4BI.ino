@@ -12,7 +12,7 @@
 #define Reset_AVR()   wdt_enable(WDTO_30MS); //reset
 
 int turno = 0; // dice di chi è il turno
-int traguardo = 50; // dice fino a che numero devi arrivare 
+int traguardo = 60; // dice fino a che numero devi arrivare 
 int somma = 0; // somma dei numeri lanciati che deve raggiungere il traguardo
 int giococomp = 0; // dice se devi giocare contro un computer o con un giocatore dipende se voglio fare anche il computer
 int valori[6];
@@ -21,7 +21,6 @@ int s = 0;
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
 void setup() {
-
   randomSeed(millis());
   pinMode(GIOCATORE, INPUT);
   pinMode(COMPUTER, INPUT);
@@ -38,7 +37,6 @@ void setup() {
 lcd.clear();
 lcd.begin(16, 2);
 }
-
 void scrivi ( String n, String m)
 {
       lcd.begin(16, 2);
@@ -46,7 +44,6 @@ void scrivi ( String n, String m)
       lcd.setCursor(0, 1);
       lcd.print(m);
 }
-
 void Controchi()//metodo che mi dice se sarò contro un giocatore o contro un computer
 {
   bool premuto = false;
@@ -68,6 +65,7 @@ void Controchi()//metodo che mi dice se sarò contro un giocatore o contro un co
 }
 void Deciditraguardo() // AUMENTA E DIMINUISCE IL VALORE DA RAGGIUNGERE FINCHE NON PREMO INVIO
 {
+   scrivi("traguardo",String(traguardo));
    while(digitalRead (INVIO) == LOW) 
    {
     if(digitalRead (PIU) == HIGH && traguardo < 99)
@@ -82,7 +80,6 @@ void Deciditraguardo() // AUMENTA E DIMINUISCE IL VALORE DA RAGGIUNGERE FINCHE N
     }
    }
 }
-
 void Riempi ( int n, int m)
 {
   int o = 0;
@@ -91,7 +88,7 @@ void Riempi ( int n, int m)
         if(i != n && i!= m )
           {
               valori[o] = i;
-              o++;
+              o++; 
            }
            else{ valori[o] = NULL;}
       } 
@@ -108,7 +105,6 @@ void Carica(int ultimo)
               { Riempi(3,4);}
       }
 }
-
 void DammiValori(int u) // mi da un'array di numeri che posso scegliere quando gioco
 {
   Carica(u);
@@ -119,31 +115,29 @@ void DammiValori(int u) // mi da un'array di numeri che posso scegliere quando g
    }
 }
 
-void Gioca() // metodo principale che mi fa giocare e posso inserire solo i valori che mi da il metodo DammiValori()
+void Gioca(int num) // metodo principale che mi fa giocare e posso inserire solo i valori che mi da il metodo DammiValori()
 {
   s = 0;
-  int n = 1;
+  int n = 0;
   int valorescelto = NULL;
   DammiValori(ultimovalore);
   while(digitalRead (INVIO) == LOW) 
   {
+  scrivi("valore:"+String(valorescelto)+"     g."+String(num),"v.g:"+String(ultimovalore)+"   somma "+String(somma));
     if(digitalRead (PIU) == HIGH && n <= 5 && valori[n+1]!= 0)
     {
         n++;
         valorescelto = valori[n];
-        scrivi("valore",String(valorescelto));
     }
     if(digitalRead (MENO) == HIGH && n > 1)
     {
         n--;
         valorescelto = valori[n];
-        scrivi("valore",String(valorescelto));
     }
     delay(150);
   }
   ControlloSomma(valorescelto);
 }
-
 void SommaPiu()//vede se ho superato la somma ////////////////////////////////////////////
 {
     if(turno == 0 && giococomp == 2)
@@ -154,7 +148,7 @@ void SommaPiu()//vede se ho superato la somma //////////////////////////////////
     if(turno == 0 && giococomp == 1)
     {
       scrivi("vinto","giocatore 2");
-        digitalWrite(VINTO2, HIGH);
+      digitalWrite(VINTO2, HIGH);
     }
     if(turno == 2 || turno == 1)
     {
@@ -162,7 +156,6 @@ void SommaPiu()//vede se ho superato la somma //////////////////////////////////
       digitalWrite(VINTO1, HIGH);
     }
 }
-
 void SommaUguale()//vede se hai la somma uguale //////////////////////////////////////
 {
     if(turno == 0)
@@ -181,7 +174,6 @@ void SommaUguale()//vede se hai la somma uguale ////////////////////////////////
       digitalWrite(VINTO2, HIGH);
     }
 }
-
 void ControlloVittoria()//mi controlla chi ha vinto
 {
   if(somma == traguardo)
@@ -203,29 +195,26 @@ void ControlloVittoria()//mi controlla chi ha vinto
   {
   somma = somma + n;
   ultimovalore = n;
-      scrivi("somma",String (somma));
       delay(1500);
   }
   else { s = 1;}
  }
-
-void Giocac()
+int Giocac()
 {
   s = 0;
   DammiValori(ultimovalore);
   int r = analogRead(A0) % 4;
   ControlloSomma(valori[r]);
+  return r;
 }
 void inizio()
 {
       digitalWrite(A0, HIGH);
       scrivi("scegli contro","chi giochi");
-      Controchi();   delay(700);
-      scrivi("scegli traguardo","");  delay(1000);
+      Controchi();   delay(1000);
       Deciditraguardo();  delay(700);
       scrivi("inizio gioco",""); delay(700);
 }
-
 void loop() {
     inizio();
     while(somma < traguardo || somma != traguardo )
@@ -233,8 +222,7 @@ void loop() {
           if(turno == 0) //gioca giocatore 1
           {
               scrivi("tocca a : ","giocatore 1"); delay(1000);
-              scrivi("scegli valore ","");
-              Gioca();// fa giocare il giocatore 
+              Gioca(1);// fa giocare il giocatore 
               ControlloVittoria();//mi controlla chi ha vinto
             if(giococomp == 1 && s == 0 ) // cambia il turno per andare avanti
               { turno = 1; }
@@ -244,8 +232,7 @@ void loop() {
           if(turno == 1) // gioca giocatore 2
           {
              scrivi("tocca a : ","giocatore 2"); delay(1500);
-             scrivi("scegli valore ","");
-             Gioca();
+             Gioca(2);
              ControlloVittoria();  
             if(s == 0)
             { turno = 0;}
@@ -253,8 +240,8 @@ void loop() {
          if(turno == 2) //se gioco con il computer forse
            {
              scrivi("tocca a : ","computer");delay(1500);
-             Giocac();
-             ControlloVittoria();            
+              scrivi("valore:"+String(Giocac())+"     g.c","v.g:"+String(ultimovalore)+"   somma "+String(somma));
+             ControlloVittoria(); delay(1000);           
             if(s == 0)
             {  turno = 0;}
            }
