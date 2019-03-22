@@ -198,11 +198,11 @@ void inizio()//parte iniziale dove l'utente decide i parametri del gioco
       scrivi("scegli contro","chi giochi");
       Controchi();   delay(1000);
       Deciditraguardo();  delay(700);
-      scrivi("inizio gioco",""); delay(700); ultimovalore= 0; somma = 0; 
+      scrivi("inizio gioco",""); delay(700);
 }
 void loop() {
-    inizio(); 
-    while(somma < traguardo)
+    inizio();
+    while(somma < traguardo ||somma!= traguardo)
       {
           if(turno == 0) //gioca giocatore 1
           {
