@@ -185,12 +185,11 @@ void ControlloVittoria()//mi controlla chi ha vinto e se qualcuno ha vinto reset
   else { s = 1;}
  }
 int Giocac()//gioca il computer
-{
-  s = 0;
+{s=0;
   DammiValori(ultimovalore);
-  int r = analogRead(A0) % 5;
+  int r = (analogRead(A0) % 5) +1;
   ControlloSomma(valori[r]);
-  return r;
+  return valori[r];
 }
 void inizio()//parte iniziale dove l'utente decide i parametri del gioco
 {
@@ -201,7 +200,7 @@ void inizio()//parte iniziale dove l'utente decide i parametri del gioco
       scrivi("inizio gioco",""); delay(700);
 }
 void loop() {
-    inizio();
+    inizio(); ultimovalore = 0; somma = 0;
     while(somma < traguardo ||somma!= traguardo)
       {
           if(turno == 0) //gioca giocatore 1
@@ -209,8 +208,8 @@ void loop() {
               scrivi("tocca a : ","giocatore 1"); delay(1200);
               Gioca(1);// fa giocare il giocatore 
               ControlloVittoria();//mi controlla chi ha vinto
-              if(giococomp == 1 && s ==0 ) { turno = 1; }
-              if(giococomp == 2 && s ==0) { turno = 2; }
+              if(giococomp == 1) { turno = 1; }
+              if(giococomp == 2) { turno = 2; }
           }
           if(turno == 1) // gioca giocatore 2
           {
