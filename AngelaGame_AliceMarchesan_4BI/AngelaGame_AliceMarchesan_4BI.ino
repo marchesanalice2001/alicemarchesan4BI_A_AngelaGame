@@ -106,8 +106,8 @@ void Gioca(int num) // metodo principale che mi fa giocare e posso inserire solo
 {
   s = 0; 
   int n = 0;
-  int valorescelto = NULL;
   DammiValori(ultimovalore);
+  int valorescelto = valori[1];
   scrivi("traguardo:   "+ String(traguardo),"mancano:     "+ String(traguardo-somma)); delay(1700);
   while(digitalRead (INVIO) == LOW) 
   {
@@ -187,7 +187,7 @@ void ControlloVittoria()//mi controlla chi ha vinto e se qualcuno ha vinto reset
 int Giocac()//gioca il computer
 {s=0;
   DammiValori(ultimovalore);
-  int r = (analogRead(A0) % 5) +1;
+  int r = (analogRead(A1) % 5) +1;
   ControlloSomma(valori[r]);
   return valori[r];
 }
@@ -209,7 +209,7 @@ void loop() {
               Gioca(1);// fa giocare il giocatore 
               ControlloVittoria();//mi controlla chi ha vinto
               if(giococomp == 1) { turno = 1; }
-              if(giococomp == 2) { turno = 2; }
+              if(giococomp == 2 ) { turno = 2; }
           }
           if(turno == 1) // gioca giocatore 2
           {
